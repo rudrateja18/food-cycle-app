@@ -22,67 +22,78 @@ def get_db():
 
 # Initialize the database
 def init_db():
-    conn = get_db()
+    conn = sqlite3.connect('food_cycle.db')
     c = conn.cursor()
     
-    try:
-        # Create donations table
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS donations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                food_type TEXT NOT NULL,
-                food_category TEXT NOT NULL,
-                quantity TEXT NOT NULL,
-                description TEXT NOT NULL,
-                status TEXT DEFAULT 'Pending',
-                pickup_time TEXT,
-                pickup_date TEXT,
-                food_received TEXT,
-                admin_feedback TEXT,
-                address TEXT NOT NULL,
-                contact TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            )
-        ''')
-        
-        # Debug: Print table structure
-        c.execute("PRAGMA table_info(donations)")
-        columns = c.fetchall()
-        print("\nDonations table structure:")
-        for col in columns:
-            print(col)
-        
-        # Check if ngo_requests table exists
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS ngo_requests (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ngo_id INTEGER,
-                donation_id INTEGER,
-                food_type TEXT,
-                food_category TEXT,
-                quantity TEXT,
-                description TEXT,
-                status TEXT DEFAULT 'Pending',
-                delivery_address TEXT,
-                contact TEXT,
-                delivery_date TEXT,
-                delivery_time TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (ngo_id) REFERENCES users(id),
-                FOREIGN KEY (donation_id) REFERENCES donations(id)
-            )
-        ''')
-        
-        conn.commit()
-        print("Database initialized successfully")
-        
-    except Exception as e:
-        print(f"Error initializing database: {str(e)}")
-        traceback.print_exc()
-    finally:
-        conn.close()
+    # Create users table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Create donations table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS donations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            food_category TEXT NOT NULL,
+            quantity TEXT NOT NULL,
+            description TEXT,
+            status TEXT DEFAULT 'Pending',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
+    # Create ngo_requests table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS ngo_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ngo_id INTEGER,
+            donation_id INTEGER,
+            status TEXT DEFAULT 'Pending',
+            delivery_address TEXT,
+            contact TEXT,
+            delivery_date TEXT,
+            delivery_time TEXT,
+            pickup_contact TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (ngo_id) REFERENCES users (id),
+            FOREIGN KEY (donation_id) REFERENCES donations (id)
+        )
+    ''')
+    
+    # Create login_history table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS login_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            username TEXT,
+            role TEXT,
+            login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
+    # Create your admin user if not exists
+    c.execute('SELECT * FROM users WHERE username = ?', ('rudra',))
+    if not c.fetchone():
+        c.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+                 ('rudra', 'Harrypotter@1', 'admin'))
+    
+    # Create default admin as backup
+    c.execute('SELECT * FROM users WHERE username = ?', ('admin',))
+    if not c.fetchone():
+        c.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+                 ('admin', 'admin123', 'admin'))
+    
+    conn.commit()
+    conn.close()
 
 def create_tables():
     conn = get_db()
@@ -108,8 +119,11 @@ def create_tables():
 
 # Initialize database on startup
 with app.app_context():
-    if not os.path.exists(DB_PATH):
+    try:
         init_db()
+        print("Database initialized successfully with admin users")
+    except Exception as e:
+        print(f"Database initialization error: {str(e)}")
 
 # Call this function when the app starts
 create_tables()
@@ -199,6 +213,13 @@ def login():
                 session['user_id'] = user[0]
                 session['username'] = user[1]
                 session['role'] = user[3]
+                
+                # Record login history
+                c.execute('''
+                    INSERT INTO login_history (user_id, username, role)
+                    VALUES (?, ?, ?)
+                ''', (user[0], username, user[3]))
+                conn.commit()
                 
                 if user[3] == 'donor':
                     return redirect(url_for('donor'))
@@ -1014,6 +1035,143 @@ def debug_requests():
         conn.close()
     
     return "Check console for debug output"
+
+@app.route('/admin_monitor')
+def admin_monitor():
+    if 'user_id' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+        
+    conn = sqlite3.connect('food_cycle.db')
+    c = conn.cursor()
+    
+    try:
+        # Get ALL users with their details
+        c.execute('''
+            SELECT 
+                id,
+                username,
+                role,
+                COALESCE(created_at, 'N/A') as registered_date
+            FROM users 
+            ORDER BY role, username
+        ''')
+        all_users = c.fetchall()
+        
+        # Get user count by role
+        c.execute('''
+            SELECT 
+                role,
+                COUNT(*) as count
+            FROM users 
+            GROUP BY role
+        ''')
+        user_stats = c.fetchall()
+        
+        # Get ALL donations with user details
+        c.execute('''
+            SELECT 
+                d.id,
+                u.username as donor_name,
+                d.food_category,
+                d.quantity,
+                d.status,
+                COALESCE(d.created_at, 'N/A') as donation_date
+            FROM donations d
+            JOIN users u ON d.user_id = u.id
+            ORDER BY d.created_at DESC
+        ''')
+        all_donations = c.fetchall()
+        
+        # Get ALL NGO requests with details
+        c.execute('''
+            SELECT 
+                nr.id,
+                u.username as ngo_name,
+                d.food_category,
+                d.quantity,
+                nr.status,
+                COALESCE(nr.created_at, 'N/A') as request_date,
+                nr.delivery_address,
+                nr.contact
+            FROM ngo_requests nr
+            JOIN users u ON nr.ngo_id = u.id
+            JOIN donations d ON nr.donation_id = d.id
+            ORDER BY nr.created_at DESC
+        ''')
+        all_requests = c.fetchall()
+        
+    except Exception as e:
+        print(f"Monitoring Error: {str(e)}")
+        all_users = []
+        user_stats = []
+        all_donations = []
+        all_requests = []
+    finally:
+        conn.close()
+        
+    return render_template('admin_monitor.html',
+                         all_users=all_users,
+                         user_stats=user_stats,
+                         all_donations=all_donations,
+                         all_requests=all_requests)
+
+# Add a new route for login monitoring
+@app.route('/admin_login_monitor')
+def admin_login_monitor():
+    if 'user_id' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+        
+    conn = sqlite3.connect('food_cycle.db')
+    c = conn.cursor()
+    
+    try:
+        # Get today's logins
+        c.execute('''
+            SELECT 
+                username,
+                role,
+                login_time
+            FROM login_history
+            WHERE date(login_time) = date('now')
+            ORDER BY login_time DESC
+        ''')
+        today_logins = c.fetchall()
+        
+        # Get last 7 days login count
+        c.execute('''
+            SELECT 
+                date(login_time) as login_date,
+                COUNT(*) as login_count
+            FROM login_history
+            WHERE login_time >= date('now', '-7 days')
+            GROUP BY date(login_time)
+            ORDER BY login_date DESC
+        ''')
+        weekly_stats = c.fetchall()
+        
+        # Get login count by role
+        c.execute('''
+            SELECT 
+                role,
+                COUNT(*) as login_count
+            FROM login_history
+            WHERE login_time >= date('now', '-7 days')
+            GROUP BY role
+        ''')
+        role_stats = c.fetchall()
+        
+    except Exception as e:
+        print(f"Login monitoring error: {str(e)}")
+        today_logins = []
+        weekly_stats = []
+        role_stats = []
+    finally:
+        conn.close()
+        
+    return render_template('admin_login_monitor.html',
+                         today_logins=today_logins,
+                         weekly_stats=weekly_stats,
+                         role_stats=role_stats)
 
 if __name__ == "__main__":
     app.run(debug=True)
