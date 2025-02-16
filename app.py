@@ -3,17 +3,26 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import traceback
+import os
 
 
 # Create Flask app
 app = Flask(__name__)
 
 # Enable session management
-app.secret_key = 'your_secret_key_here'  # Change this for production
+app.secret_key = os.environ.get('SECRET_KEY', 'default-key-for-dev')
+
+# Update database path for Render
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'food_cycle.db')
+
+# Update database connections
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    return conn
 
 # Initialize the database
 def init_db():
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -76,7 +85,7 @@ def init_db():
         conn.close()
 
 def create_tables():
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
 
     # Add food_received column to donations table if it doesn't exist
@@ -97,14 +106,16 @@ def create_tables():
 
     conn.close()
 
-# Initialize database
-init_db()
+# Initialize database on startup
+with app.app_context():
+    if not os.path.exists(DB_PATH):
+        init_db()
 
 # Call this function when the app starts
 create_tables()
 
 def create_ngo_requests_table():
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     try:
         c.execute('''
@@ -155,7 +166,7 @@ def register():
 
         hashed_password = generate_password_hash(password)
 
-        conn = sqlite3.connect('food_cycle.db')
+        conn = get_db()
         c = conn.cursor()
         try:
             c.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
@@ -177,7 +188,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        conn = sqlite3.connect('food_cycle.db')
+        conn = get_db()
         c = conn.cursor()
         
         try:
@@ -232,7 +243,7 @@ def new_donation():
         pickup_address = request.form['pickup_address']
         contact = request.form['contact']
         
-        conn = sqlite3.connect('food_cycle.db')
+        conn = get_db()
         c = conn.cursor()
         c.execute('INSERT INTO donations (food_category, quantity, description, pickup_address, status, contact, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
                     (food_category, quantity, description, pickup_address, 'Pending', contact, session['user_id']))
@@ -254,7 +265,7 @@ def donor_history():
         return redirect(url_for('login'))
 
     donor_id = session['user_id']
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
 
     c.execute('''
@@ -285,7 +296,7 @@ def ngo():
     if 'user_id' not in session or session['role'] != 'ngo':
         return redirect(url_for('login'))
         
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -331,7 +342,7 @@ def accept_donor(donation_id):
     if 'user_id' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
         
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -380,7 +391,7 @@ def request_donation(donation_id):
         flash('Delivery address and contact are required!')
         return redirect(url_for('ngo'))
 
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -429,7 +440,7 @@ def ngo_history():
     if 'user_id' not in session or session['role'] != 'ngo':
         return redirect(url_for('login'))
         
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -477,7 +488,7 @@ def admin():
     if 'user_id' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
     
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     # Get donor donations with user information
@@ -573,7 +584,7 @@ def admin_donors():
     if 'user_id' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
     
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -630,7 +641,7 @@ def admin_ngos():
     if 'user_id' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
         
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -710,7 +721,7 @@ def update_donation(donation_id):
     if 'user_id' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
     
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -770,7 +781,7 @@ def update_ngo_request(request_id):
     print(f"Delivery Date: {delivery_date}")
     print(f"Delivery Time: {delivery_time}")
     
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
 
     try:
@@ -828,7 +839,7 @@ def submit_donation():
         print("\nSubmitting donation:")
         print(data)
         
-        conn = sqlite3.connect('food_cycle.db')
+        conn = get_db()
         c = conn.cursor()
         
         # Insert donation
@@ -867,7 +878,7 @@ def submit_donation():
 
 @app.route('/debug_ngo_requests')
 def debug_ngo_requests():
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     c.execute("SELECT * FROM ngo_requests")
@@ -893,7 +904,7 @@ def submit_ngo_request():
         address = request.form.get('address')
         contact = request.form.get('contact')
         
-        conn = sqlite3.connect('food_cycle.db')
+        conn = get_db()
         c = conn.cursor()
         
         c.execute('''
@@ -919,7 +930,7 @@ def debug_db():
     if 'user_id' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
         
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -960,7 +971,7 @@ def debug_requests():
     if 'user_id' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
         
-    conn = sqlite3.connect('food_cycle.db')
+    conn = get_db()
     c = conn.cursor()
     
     try:
@@ -1005,5 +1016,4 @@ def debug_requests():
     return "Check console for debug output"
 
 if __name__ == "__main__":
-    init_db()  # Initialize database on startup
     app.run(debug=True)
