@@ -22,78 +22,95 @@ def get_db():
 
 # Initialize the database
 def init_db():
-    conn = sqlite3.connect('food_cycle.db')
-    c = conn.cursor()
-    
-    # Create users table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # Create donations table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS donations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            food_category TEXT NOT NULL,
-            quantity TEXT NOT NULL,
-            description TEXT,
-            status TEXT DEFAULT 'Pending',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-    ''')
-    
-    # Create ngo_requests table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS ngo_requests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ngo_id INTEGER,
-            donation_id INTEGER,
-            status TEXT DEFAULT 'Pending',
-            delivery_address TEXT,
-            contact TEXT,
-            delivery_date TEXT,
-            delivery_time TEXT,
-            pickup_contact TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (ngo_id) REFERENCES users (id),
-            FOREIGN KEY (donation_id) REFERENCES donations (id)
-        )
-    ''')
-    
-    # Create login_history table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS login_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            username TEXT,
-            role TEXT,
-            login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-    ''')
-    
-    # Create your admin user if not exists
-    c.execute('SELECT * FROM users WHERE username = ?', ('rudra',))
-    if not c.fetchone():
-        c.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-                 ('rudra', 'Harrypotter@1', 'admin'))
-    
-    # Create default admin as backup
-    c.execute('SELECT * FROM users WHERE username = ?', ('admin',))
-    if not c.fetchone():
-        c.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-                 ('admin', 'admin123', 'admin'))
-    
-    conn.commit()
-    conn.close()
+    print("\n=== INITIALIZING DATABASE ===")
+    try:
+        conn = sqlite3.connect('food_cycle.db')
+        c = conn.cursor()
+        
+        # Create users table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                role TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        print("Users table created")
+        
+        # Create donations table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS donations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                food_category TEXT NOT NULL,
+                quantity TEXT NOT NULL,
+                description TEXT,
+                status TEXT DEFAULT 'Pending',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        
+        # Create ngo_requests table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS ngo_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ngo_id INTEGER,
+                donation_id INTEGER,
+                status TEXT DEFAULT 'Pending',
+                delivery_address TEXT,
+                contact TEXT,
+                delivery_date TEXT,
+                delivery_time TEXT,
+                pickup_contact TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (ngo_id) REFERENCES users (id),
+                FOREIGN KEY (donation_id) REFERENCES donations (id)
+            )
+        ''')
+        
+        # Create login_history table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS login_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                username TEXT,
+                role TEXT,
+                login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        
+        # Create your admin user
+        c.execute('SELECT * FROM users WHERE username = ?', ('rudra',))
+        if not c.fetchone():
+            c.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+                     ('rudra', 'Harrypotter@1', 'admin'))
+            print("Admin user 'rudra' created")
+        else:
+            print("Admin user 'rudra' already exists")
+            
+        # Verify admin user
+        c.execute('SELECT * FROM users WHERE username = ?', ('rudra',))
+        admin = c.fetchone()
+        if admin:
+            print(f"Verified admin user: {admin}")
+        
+        # Create default admin as backup
+        c.execute('SELECT * FROM users WHERE username = ?', ('admin',))
+        if not c.fetchone():
+            c.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+                     ('admin', 'admin123', 'admin'))
+        
+        conn.commit()
+        conn.close()
+        print("Database initialization completed successfully")
+        
+    except Exception as e:
+        print(f"Database initialization error: {str(e)}")
+        raise e
 
 def create_tables():
     conn = get_db()
@@ -119,11 +136,11 @@ def create_tables():
 
 # Initialize database on startup
 with app.app_context():
+    print("\n=== APPLICATION STARTUP ===")
     try:
         init_db()
-        print("Database initialized successfully with admin users")
     except Exception as e:
-        print(f"Database initialization error: {str(e)}")
+        print(f"Startup error: {str(e)}")
 
 # Call this function when the app starts
 create_tables()
@@ -202,40 +219,36 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        conn = get_db()
+        print(f"\n=== LOGIN ATTEMPT ===")
+        print(f"Username: {username}")
+        
+        conn = sqlite3.connect('food_cycle.db')
         c = conn.cursor()
         
         try:
             c.execute('SELECT * FROM users WHERE username = ?', (username,))
             user = c.fetchone()
             
-            if user and check_password_hash(user[2], password):
-                session['user_id'] = user[0]
-                session['username'] = user[1]
-                session['role'] = user[3]
-                
-                # Record login history
-                c.execute('''
-                    INSERT INTO login_history (user_id, username, role)
-                    VALUES (?, ?, ?)
-                ''', (user[0], username, user[3]))
-                conn.commit()
-                
-                if user[3] == 'donor':
-                    return redirect(url_for('donor'))
-                elif user[3] == 'ngo':
-                    return redirect(url_for('ngo'))  # Changed from ngo_dashboard to ngo
-                elif user[3] == 'admin':
-                    return redirect(url_for('admin'))
+            if user:
+                print(f"User found: {user}")
+                if user[2] == password:  # Index 2 is password
+                    session['user_id'] = user[0]   # Index 0 is id
+                    session['role'] = user[3]      # Index 3 is role
+                    print(f"Login successful. Role: {user[3]}")
+                    return redirect(url_for(f'{user[3]}'))
+                else:
+                    print("Password mismatch")
             else:
-                flash('Invalid username or password')
+                print("User not found")
                 
+            flash('Invalid username or password')
+            
         except Exception as e:
             print(f"Login error: {str(e)}")
             flash('An error occurred during login')
         finally:
             conn.close()
-    
+            
     return render_template('login.html')
 
 # Logout page
