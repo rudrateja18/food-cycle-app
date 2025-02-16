@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donation History - Food Cycle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 80px 20px 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .donation-grid {
+            display: grid;
+            gap: 25px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .donation-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .donation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-accepted {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-declined {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .donation-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            padding-right: 100px;
+        }
+
+        .donation-info {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+        }
+
+        .info-item i {
+            color: #4CAF50;
+            font-size: 1.1rem;
+        }
+
+        .details-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .details-section h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 60px 15px 80px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .donation-card {
+                padding: 20px;
+            }
+
+            .status-badge {
+                position: static;
+                display: inline-block;
+                margin-bottom: 15px;
+            }
+
+            .donation-title {
+                padding-right: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .back-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>My Donation History</h1>
+        </div>
+
+        <div class="donation-grid">
+            {% for donation in donations %}
+            <div class="donation-card">
+                <span class="status-badge status-{{ donation[5].lower() }}">
+                    {{ donation[5] }}
+                </span>
+
+                <h3 class="donation-title">{{ donation[1] }}</h3>
+
+                <div class="donation-info">
+                    <div class="info-item">
+                        <i class="fas fa-box"></i>
+                        <span>Quantity: {{ donation[2] }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-align-left"></i>
+                        <span>Description: {{ donation[3] }}</span>
+                    </div>
+                </div>
+
+                {% if donation[5] in ['Accepted', 'Completed'] %}
+                <div class="details-section">
+                    <h4>Pickup Details</h4>
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Address: {{ donation[4] }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>Date: {{ donation[8] }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Time: {{ donation[7] }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if donation[5] == 'Completed' %}
+                <div class="details-section">
+                    <h4>Completion Details</h4>
+                    <div class="info-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Food Received: {{ donation[10] }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-comment"></i>
+                        <span>Admin Feedback: {{ donation[9] or 'No feedback provided' }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('donor') }}" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+</body>
+</html>

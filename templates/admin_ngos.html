@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - NGO Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2E7D32;
+            font-size: 2em;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100px;
+            height: 3px;
+            background: #4CAF50;
+            border-radius: 2px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.primary {
+            background: #4CAF50;
+        }
+
+        .nav-btn.secondary {
+            background: #2196F3;
+        }
+
+        .nav-btn.danger {
+            background: #dc3545;
+        }
+
+        .status-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .status-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2E7D32;
+        }
+
+        .status-count {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .donation-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .value {
+            color: #333;
+        }
+
+        .update-form {
+            margin-top: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #388E3C;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            h1::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+            }
+
+            .status-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detail-row-continuous {
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-size: 14px;
+            line-height: 1.6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .detail-row-continuous:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+        
+        .detail-row-continuous .value {
+            color: #444;
+            word-wrap: break-word;
+        }
+        
+        .detail-row-continuous strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .completed-status {
+            border-left: 4px solid #28a745;
+        }
+        
+        .declined-status {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .completed-status .status-badge {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .declined-status .status-badge {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .detail-row-continuous:last-child {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>NGO Management</h1>
+            <div class="nav-buttons">
+                <a href="{{ url_for('admin') }}" class="nav-btn secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <a href="{{ url_for('admin_donors') }}" class="nav-btn primary">
+                    <i class="fas fa-users"></i> Donor Management
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-btn danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="status-cards">
+            <!-- Pending NGO Requests -->
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">Pending Requests</span>
+                    <span class="status-count">{{ ngo_status.pending|length }}</span>
+                </div>
+                {% for request in ngo_status.pending %}
+                <div class="donation-details">
+                    <div class="detail-row">
+                        <span class="label">NGO Name:</span>
+                        <span class="value">{{ request[6] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Category:</span>
+                        <span class="value">{{ request[7] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Quantity:</span>
+                        <span class="value">{{ request[8] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Description:</span>
+                        <span class="value">{{ request[9] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Delivery Address:</span>
+                        <span class="value">{{ request[4] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Contact:</span>
+                        <span class="value">{{ request[5] }}</span>
+                    </div>
+                    <form action="{{ url_for('update_ngo_request', request_id=request[0]) }}" method="POST">
+                        <div class="form-group">
+                            <label>Delivery Date:</label>
+                            <input type="date" name="delivery_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Delivery Time:</label>
+                            <input type="time" name="delivery_time" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Status:</label>
+                            <select name="status" required>
+                                <option value="Accepted">Accept</option>
+                                <option value="Declined">Decline</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn">Update Status</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Accepted NGO Requests -->
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">Accepted Requests</span>
+                    <span class="status-count">{{ ngo_status.accepted|length }}</span>
+                </div>
+                {% for request in ngo_status.accepted %}
+                <div class="donation-details">
+                    <div class="detail-row">
+                        <span class="label">NGO Name:</span>
+                        <span class="value">{{ request[6] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Category:</span>
+                        <span class="value">{{ request[7] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Quantity:</span>
+                        <span class="value">{{ request[8] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Description:</span>
+                        <span class="value">{{ request[9] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Delivery Address:</span>
+                        <span class="value">{{ request[4] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Contact:</span>
+                        <span class="value">{{ request[5] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Delivery Date:</span>
+                        <span class="value">{{ request[11] }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Delivery Time:</span>
+                        <span class="value">{{ request[12] }}</span>
+                    </div>
+                    <form action="{{ url_for('update_ngo_request', request_id=request[0]) }}" method="POST">
+                        <div class="form-group">
+                            <label>Update Status:</label>
+                            <select name="status" required>
+                                <option value="Completed">Complete</option>
+                                <option value="Declined">Decline</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn">Update Status</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Completed/Declined NGO Requests -->
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">Completed/Declined Requests</span>
+                    <span class="status-count">{{ ngo_status.completed_declined|length }}</span>
+                </div>
+                {% for request in ngo_status.completed_declined %}
+                <div class="donation-details">
+                    <div class="detail-row-continuous {% if request[3] == 'Completed' %}completed-status{% else %}declined-status{% endif %}">
+                        <span class="value">
+                            <strong>NGO:</strong> {{ request[6] }} | 
+                            <strong>Category:</strong> {{ request[7] }} | 
+                            <strong>Quantity:</strong> {{ request[8] }} | 
+                            <strong>Description:</strong> {{ request[9] }} | 
+                            <strong>Address:</strong> {{ request[4] }} | 
+                            <strong>Contact:</strong> {{ request[5] }} | 
+                            <strong>Status:</strong> <span class="status-badge">{{ request[3] }}</span> | 
+                            <strong>Delivery Date:</strong> {{ request[11] }} | 
+                            <strong>Delivery Time:</strong> {{ request[12] }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

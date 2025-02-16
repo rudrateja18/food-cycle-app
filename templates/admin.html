@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Food Cycle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding-top: 80px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            padding-top: 20px;
+        }
+
+        h1 {
+            color: #2E7D32;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 15px;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: #4CAF50;
+            border-radius: 2px;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .home-btn {
+            background: #FF9800;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .home-btn:hover {
+            background: #F57C00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .option-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .option-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .option-icon {
+            font-size: 3em;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            background: #e8f5e9;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .option-card:hover .option-icon {
+            background: #4CAF50;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .option-title {
+            color: #2E7D32;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .option-description {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .back-to-home {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-to-home:hover {
+            background: #388E3C;
+            transform: translateX(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-to-home i {
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                margin-bottom: 80px;
+            }
+
+            .nav-buttons {
+                position: relative;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .home-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .options-container {
+                padding: 10px;
+            }
+
+            .option-card {
+                min-height: 250px;
+            }
+
+            .back-to-home {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin: 20px auto;
+                width: fit-content;
+                justify-content: center;
+            }
+
+            .dashboard {
+                padding-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <a href="{{ url_for('logout') }}" class="back-to-home">
+            <i class="fas fa-arrow-left"></i>
+            Back to Home
+        </a>
+        
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <div class="nav-buttons">
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="options-container">
+            <a href="{{ url_for('admin_donors') }}" class="option-card">
+                <div class="option-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h2 class="option-title">Donor Management</h2>
+                <p class="option-description">
+                    Manage donor donations, review pending requests, and track donation statuses.
+                </p>
+            </a>
+
+            <a href="{{ url_for('admin_ngos') }}" class="option-card">
+                <div class="option-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h2 class="option-title">NGO Management</h2>
+                <p class="option-description">
+                    Handle NGO requests, coordinate food distribution, and monitor deliveries.
+                </p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

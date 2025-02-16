@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request History - Food Cycle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 80px 20px 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .history-grid {
+            display: grid;
+            gap: 25px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .history-card {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin: 15px 0;
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+        }
+
+        .history-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .history-card.muted {
+            opacity: 0.8;
+        }
+
+        .history-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .history-section {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .history-section h4 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .detail-row {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .label {
+            color: #6c757d;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .value {
+            color: #2c3e50;
+            font-weight: 400;
+            text-align: right;
+            font-size: 14px;
+        }
+
+        .value.highlight {
+            color: #007bff;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .pending {
+            background-color: #ffc107;
+        }
+
+        .accepted {
+            background-color: #28a745;
+        }
+
+        .completed {
+            background-color: #17a2b8;
+        }
+
+        .declined {
+            background-color: #dc3545;
+        }
+
+        .history-date {
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .history-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .back-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/ngo" class="logo">
+                <i class="fas fa-seedling"></i>
+                FoodCycle
+            </a>
+            <div class="nav-links">
+                <a href="/ngo" class="nav-btn secondary">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="/logout" class="nav-btn secondary">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Request History</h1>
+            <p>Track your food donation requests</p>
+        </div>
+
+        <div class="status-card">
+            <div class="status-header">
+                <span class="status-title">Request History</span>
+            </div>
+            {% for request in requests %}
+            <div class="history-card {% if request[2]|lower in ['completed', 'declined'] %}muted{% endif %}">
+                <div class="history-header">
+                    <span class="status-badge {{ request[2]|lower }}">{{ request[2] }}</span>
+                    <span class="history-date">Request #{{ request[0] }}</span>
+                </div>
+                
+                <div class="history-content">
+                    <div class="history-section">
+                        <h4>Food Details</h4>
+                        <div class="detail-row">
+                            <span class="label">Category:</span>
+                            <span class="value">{{ request[7] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Quantity:</span>
+                            <span class="value">{{ request[8] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Description:</span>
+                            <span class="value">{{ request[9] }}</span>
+                        </div>
+                    </div>
+
+                    <div class="history-section">
+                        <h4>Delivery Details</h4>
+                        <div class="detail-row">
+                            <span class="label">Address:</span>
+                            <span class="value">{{ request[3] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Contact:</span>
+                            <span class="value">{{ request[4] }}</span>
+                        </div>
+                        {% if request[2] == 'Accepted' and request[5] and request[6] %}
+                        <div class="detail-row">
+                            <span class="label">Scheduled:</span>
+                            <span class="value highlight">{{ request[5] }} at {{ request[6] }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <a href="{{ url_for('ngo') }}" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+</body>
+</html>

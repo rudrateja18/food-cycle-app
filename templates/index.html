@@ -1,0 +1,298 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Cycle - Welcome</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem 5%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .main-container {
+            padding-top: 100px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .welcome-section h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .welcome-section p {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            margin-bottom: 30px;
+            opacity: 0.9;
+            animation: fadeIn 1s ease-out 0.2s;
+            animation-fill-mode: forwards;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+            animation: slideUp 1s ease-out;
+        }
+
+        .btn-custom {
+            background: white;
+            color: #4CAF50;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-custom i {
+            font-size: 1.2rem;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background: #4CAF50;
+            color: white;
+        }
+
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: #4CAF50;
+            border-radius: 3px;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 80px 20px 30px;
+            }
+
+            .button-container {
+                flex-direction: column;
+                padding: 0 20px;
+            }
+
+            .btn-custom {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .info-section {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-section {
+                margin: 0 10px 30px;
+                padding: 30px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .info-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="logo">
+                <i class="fas fa-seedling"></i>
+                FoodCycle
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <section class="welcome-section">
+            <h1>Welcome to Food Cycle</h1>
+            <p>Your platform for sharing food and making a difference in the community</p>
+            
+            {% if not is_logged_in() %}
+                <div class="button-container">
+                    <a href="/login" class="btn-custom">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login
+                    </a>
+                    <a href="/register" class="btn-custom">
+                        <i class="fas fa-user-plus"></i>
+                        Register
+                    </a>
+                </div>
+            {% else %}
+                <div class="button-container">
+                    {% if session['role'] == 'donor' %}
+                        <a href="/donor" class="btn-custom">
+                            <i class="fas fa-hand-holding-heart"></i>
+                            Donor Dashboard
+                        </a>
+                        <a href="/donor_history" class="btn-custom">
+                            <i class="fas fa-history"></i>
+                            Donation History
+                        </a>
+                    {% elif session['role'] == 'ngo' %}
+                        <a href="/ngo" class="btn-custom">
+                            <i class="fas fa-building"></i>
+                            NGO Dashboard
+                        </a>
+                        <a href="/ngo_history" class="btn-custom">
+                            <i class="fas fa-history"></i>
+                            Request History
+                        </a>
+                    {% elif session['role'] == 'admin' %}
+                        <a href="/admin" class="btn-custom">
+                            <i class="fas fa-user-shield"></i>
+                            Admin Dashboard
+                        </a>
+                    {% endif %}
+                    <a href="/logout" class="btn-custom">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+
+        <div class="info-section">
+            <div class="info-card">
+                <h2 class="section-title">About Us</h2>
+                <p>Food Cycle connects food donors with NGOs to reduce food waste and help those in need. Join us in making a difference in our community.</p>
+            </div>
+
+            <div class="info-card">
+                <h2 class="section-title">Contact Us</h2>
+                <p>Email: <a href="mailto:foodcycle@example.com">rudrateja18.06@gmail.com</a></p>
+                <p>Phone: 9676128401</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

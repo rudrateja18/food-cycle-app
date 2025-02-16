@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requested Donations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        nav {
+            background-color: #4CAF50;
+            padding: 15px;
+        }
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            text-align: center;
+            padding: 50px;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/donor">Donor Dashboard</a>
+        <a href="/ngo">NGO Dashboard</a>
+        <a href="/requested_donations">Requested Donations</a>
+    </nav>
+    <div class="container">
+        <h1>Requested Donations</h1>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Food Category</th>
+                <th>Quantity</th>
+                <th>Description</th>
+                <th>Pickup Address</th>
+                <th>Status</th>
+            </tr>
+            {% for donation in donations %}
+            <tr>
+                <td>{{ donation[0] }}</td>
+                <td>{{ donation[1] }}</td>
+                <td>{{ donation[2] }}</td>
+                <td>{{ donation[3] }}</td>
+                <td>{{ donation[4] }}</td>
+                <td>{{ donation[5] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
