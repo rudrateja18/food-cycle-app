@@ -12,19 +12,25 @@ app = Flask(__name__)
 # Enable session management
 app.secret_key = os.environ.get('SECRET_KEY', 'default-key-for-dev')
 
-# Update database path for Render
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'food_cycle.db')
+# Ensure the instance folder exists
+instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
+if not os.path.exists(instance_path):
+    os.makedirs(instance_path)
+
+# Update database path
+DB_PATH = os.path.join(instance_path, 'food_cycle.db')
 
 # Update database connections
 def get_db():
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     return conn
 
 # Initialize the database
 def init_db():
     print("\n=== INITIALIZING DATABASE ===")
     try:
-        conn = sqlite3.connect('food_cycle.db')
+        conn = get_db()
         c = conn.cursor()
         
         # Create users table
@@ -222,30 +228,24 @@ def login():
         print(f"\n=== LOGIN ATTEMPT ===")
         print(f"Username: {username}")
         
-        conn = sqlite3.connect('food_cycle.db')
-        c = conn.cursor()
-        
         try:
+            conn = get_db()
+            c = conn.cursor()
+            
             c.execute('SELECT * FROM users WHERE username = ?', (username,))
             user = c.fetchone()
             
-            if user:
-                print(f"User found: {user}")
-                if user[2] == password:  # Index 2 is password
-                    session['user_id'] = user[0]   # Index 0 is id
-                    session['role'] = user[3]      # Index 3 is role
-                    print(f"Login successful. Role: {user[3]}")
-                    return redirect(url_for(f'{user[3]}'))
-                else:
-                    print("Password mismatch")
+            if user and user['password'] == password:
+                session['user_id'] = user['id']
+                session['role'] = user['role']
+                print(f"Login successful for {username}")
+                return redirect(url_for(user['role']))
             else:
-                print("User not found")
+                flash('Invalid username or password')
                 
-            flash('Invalid username or password')
-            
         except Exception as e:
             print(f"Login error: {str(e)}")
-            flash('An error occurred during login')
+            flash('An error occurred. Please try again.')
         finally:
             conn.close()
             
@@ -1185,6 +1185,15 @@ def admin_login_monitor():
                          today_logins=today_logins,
                          weekly_stats=weekly_stats,
                          role_stats=role_stats)
+
+@app.errorhandler(500)
+def internal_error(error):
+    print(f"Internal Server Error: {str(error)}")
+    return render_template('error.html', error=error), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('error.html', error=error), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
